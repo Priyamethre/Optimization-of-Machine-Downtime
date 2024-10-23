@@ -1,20 +1,7 @@
-'''  Name     : METHRE PRIYA 
-     Batch ID : 121323204012 '''
 
 '**    PROJECT - OPTIMIZATION OF MACHINE DOWNTIME - DATA PREPROCESSING CODE       **'
         
 '''
-Business Problem    : Machines which manufacture the pumps. Unplanned Machine Downtime which
-is leading to loss of productivity.
-
-Business Objective  : Minimize unplanned machine downtime.
-Business Constraint : Minimize maintenance cost.
-
-Success Criteria:
-Business Success Criteria         : Reduce the unplanned downtime by at least 10%.
-Machine Learning Success Criteria :  Develop an ML model that reduces unplanned machine downtime by at least 10%.
-Economic Success Criteria         : Achieve a cost saving of at least $1M.
-
 Data Dictionary:
  Dataset contains 2500 entries
  15 features are recorded 
@@ -83,9 +70,9 @@ import xgboost as xgb
 machine = pd.read_csv(r"C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\Machine Downtime.csv")
 
 # Credentials to connect to Database
-user = 'root'  # user name
-pw = 'priya'  # password
-db = 'mach'  # database name
+user = 'user1'  # user name
+pw = 'user2'  # password
+db = 'user3'  # database name
 engine = create_engine(f"mysql+pymysql://{user}:%s@localhost/{db}" % quote (f'{pw}'))
 
 # to_sql() - function to push the dataframe onto a SQL table.
@@ -240,6 +227,8 @@ numeric_features
 categorical_features = df.select_dtypes(include=['object']).columns.tolist()
 categorical_features.remove('Downtime')
 
+# Drop categorical features
+categorical_features.drop(columns=['Machine_ID','Assembly_Line_No'],inplace=True)
 
 ################  Missing values Analysis        ###############################
 
@@ -304,24 +293,6 @@ plt.show()
 
 # here ,we can notice that after scaling the x -axis values are changed to 0 to 1 , means all numerical values are now scaled
 
-###########  Encoding Non-numeric fields         #################################
-
-# **Convert Categorical data  to Numerical data using OneHotEncoder**
-
- # Define the encoding pipeline for one-hot encoding
-# encoding_pipeline = Pipeline([('onehot', OneHotEncoder())])
-
-# encoding_columntransfer = ColumnTransformer([('encode', encoding_pipeline, categorical_features)])
-# encoding_pipeline = encoding_columntransfer.fit(predictors)
-
-# joblib.dump(encoding_pipeline, 'encoding')
-
-# encode_data = pd.DataFrame(encoding_pipeline.transform(predictors))
-# encode_data
-
-# # clean_data = pd.concat([scaled_data], axis = 1, ignore_index = True)  # concatenated data will have new sequential index
-# # clean_data
-
 
 # File gets saved under current working directory
 import os
@@ -352,15 +323,13 @@ winsor = Winsorizer(capping_method = 'iqr', # choose  IQR rule boundaries or gau
                           tail = 'both', # cap left, right or both tails 
                           fold = 1.5,
                           variables = ['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
-                                 'Air_System_Pressure(bar)', 'Coolant_Temperature',
-                                 'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+                                 'Air_System_Pressure(bar)', 
                                  'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Spindle_Speed(RPM)',
                                  'Voltage(volts)', 'Torque(Nm)', 'Cutting(kN)'])
 
 
 outlier = winsor.fit(scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
-       'Air_System_Pressure(bar)', 'Coolant_Temperature',
-       'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+       'Air_System_Pressure(bar)', 
        'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Spindle_Speed(RPM)',
        'Voltage(volts)', 'Torque(Nm)', 'Cutting(kN)']])
 
@@ -368,8 +337,7 @@ outlier = winsor.fit(scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(b
 joblib.dump(outlier, 'winsor')
 
 scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
-       'Air_System_Pressure(bar)', 'Coolant_Temperature',
-       'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+       'Air_System_Pressure(bar)', 
        'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Spindle_Speed(RPM)',
        'Voltage(volts)', 'Torque(Nm)', 'Cutting(kN)']] = outlier.transform(scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
               'Air_System_Pressure(bar)', 'Coolant_Temperature',
@@ -422,154 +390,6 @@ plt.ylabel('Frequency')
 plt.legend(title='Downtime Category')
 plt.show()
 # Shopfloor-L1 exhibits the highest incidence of machine failure, while Shopfloor-L2 and Shopfloor-L3 demonstrate nearly equal rates of both machine failure and non-machine failure.
-
-# Stacked Bar Plot with Machine ID
-
-plt.figure(figsize=(10, 6))
-sns.countplot(data=df, x='Machine_ID', hue='Downtime')
-plt.title('Downtime Distribution Across Machine_ID ')
-plt.xlabel('Machine_ID')
-plt.ylabel('Frequency')
-plt.legend(title='Downtime Category')
-plt.show()
-# Makino-L1-Unit1-2013 shows the highest machine failure rate, while Makino-L2-Unit1-2015 and Makino-L3-Unit1-2015 display nearly identical rates of both machine failure and non-machine failure.
-
-df.columns
-
-# Bar plots between numerical values and Downtime
-
-'  Hydraulic pressure VS Downtime' 
-
-colors = ['yellow', '#9467bd']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Hydraulic_Pressure(bar)', palette=colors)
-plt.title('Hydraulic Pressure by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Hydraulic Pressure (bar)')
-plt.show()
-# As hydraulic pressure increases, there tends to be a decrease in machine failure occurrences.
-
-
-'  Coolant pressure VS Downtime     '
-
-colors = ['maroon', 'black']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Coolant_Pressure(bar)', palette=colors)
-plt.title('Coolant Pressure by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Coolant Pressure (bar)')
-plt.show()
-# The rise in coolant pressure doesn't substantially affect machine downtime.
-
-'  Air system pressure VS Downtime  '
-
-colors = ['#1f77b4', '#e377c2']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Air_System_Pressure(bar)', palette=colors)
-plt.title('Air_System_Pressure(bar) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Air_System_Pressure(bar)')
-plt.show()
-# As the air system pressure increases, both machine failure and no-machine failure instances appear to rise proportionally, suggesting an equivalence between the two.
-
-'  Coolant_Temperature VS Downtime   '
-
-colors = ['#8c564b', '#17becf']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Coolant_Temperature', palette=colors)
-plt.title('Coolant_Temperature by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Coolant_Temperature')
-plt.show()
-# As the temperature of the coolant increases, there is a corresponding uptick in instances of machine failure.
-
-'  Hydraulic_Oil_Temperature(°C) VS Downtime '
-
-colors = ['#f7b6d2', '#7f7f7f']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Hydraulic_Oil_Temperature(°C)', palette=colors)
-plt.title('Hydraulic_Oil_Temperature(°C) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Hydraulic_Oil_Temperature(°C)')
-plt.show()
-# As hydraulic oil temperature increases, both machine and no-machine failure rates increase, reaching a comparable level.
-
-' Spindle_Bearing_Temperature(°C) VS Downtime   '
-
-colors = ['#c49c94','#ff9896']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Spindle_Bearing_Temperature(°C)', palette=colors)
-plt.title('Spindle_Bearing_Temperature(°C) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Spindle_Bearing_Temperature(°C)')
-plt.show()
-#  As Spindle bearing temperature increases, both machine and no-machine failure rates increase, reaching a comparable level.
-
-'  Spindle_Vibration(µm) VS Downtime   '
-
-colors = ['#98df8a', '#aec7e8']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Spindle_Vibration(µm)', palette=colors)
-plt.title('Spindle_Vibration(µm) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Spindle_Vibration(µm)')
-plt.show()
-# Spindle vibration exhibits an equal occurrence of both machine failure and non-machine failure instances.
-
-' Tool_Vibration(µm) VS Downtime'
-
-colors = ['#b35900', '#006600']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Tool_Vibration(µm)', palette=colors)
-plt.title('Tool_Vibration(µm) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Tool_Vibration(µm)')
-plt.show()
-# Tool vibration exhibits an equal occurrence of both machine failure and non-machine failure instances.
-
-'Spindle_Speed(RPM) VS Downtime'
-
-colors = ['#4d004d', '#999900']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Spindle_Speed(RPM)', palette=colors)
-plt.title('Spindle_Speed(RPM) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Spindle_Speed(RPM)')
-plt.show()
-# With an increase in spindle speed, there is a slight uptick observed in machine failure occurrences.
-
-'Voltage(volts) VS Downtime'
-
-colors = ['#c5b0d5', '#4d004d']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Voltage(volts)', palette=colors)
-plt.title('Voltage(volts) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Voltage(volts)')
-plt.show()
-# Voltage exhibits an equal occurrence of both machine failure and non-machine failure instances.
-
-'Torque(Nm) VS Downtime'
-
-colors = ['#008080', '#708090']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Torque(Nm)', palette=colors)
-plt.title('Torque(Nm) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Torque(Nm)')
-plt.show()
-# An increase in torque corresponds to a decrease in machine failure rates.
-
-'Cutting(kN) VS Downtime'
-
-colors = ['#40e0d0', '#fa8072']  
-plt.figure(figsize=(10, 6))
-sns.barplot(data=df, x='Downtime', y='Cutting(kN)', palette=colors)
-plt.title('Cutting(kN) by Downtime')
-plt.xlabel('Downtime')
-plt.ylabel('Cutting(kN)')
-plt.show()
-# As cutting force (measured in KN) rises, there is typically a corresponding increase in machine failure rates, coupled with a slight decrease in non-machine failure instances.
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -689,8 +509,6 @@ Y = np.ravel(Y)
 train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size = 0.2, stratify = Y,random_state=42)
 
 ############# Random Forest Model
-
-
 rf_Model = RandomForestClassifier()
 
 # #### Hyperparameters
@@ -764,8 +582,6 @@ pickle.dump(cv_rf_grid, open('rfc.pkl', 'wb'))
 
 
 ############ DECISION TREE
-
-
 dt = DecisionTreeClassifier(random_state=42)
 dt_param_grid = {'max_depth': [None, 5, 10, 20]}
 dt_grid_search = GridSearchCV(dt, dt_param_grid, cv=5, n_jobs=-1)
@@ -791,7 +607,6 @@ pickle.dump(dt_best_model, open('decision_tree_model.pkl','wb'))
 
 
 #########  KNN
-
 knn = KNeighborsClassifier()
 knn_param_grid = {'n_neighbors': [3, 5, 10, 20]}
 knn_grid_search = GridSearchCV(knn, knn_param_grid, cv=5, n_jobs=-1)
@@ -814,7 +629,6 @@ pickle.dump(knn_best_model, open('knn_model.pkl','wb'))
 
 
 ############ Logistic Regression
-
 # Create logistic regression model
 lr = LogisticRegression()
 
@@ -849,7 +663,6 @@ pickle.dump(best_lr, open('logistic_regression_model.pk' ,'wb'))
 
 
 ###############  SVM
-
 # SVC with linear kernel trick
 model_linear = SVC(kernel = "linear")
 model1 = model_linear.fit(train_X, train_Y)
