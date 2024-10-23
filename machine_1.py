@@ -1,32 +1,6 @@
 
-'**    PROJECT - OPTIMIZATION OF MACHINE DOWNTIME - DATA PREPROCESSING CODE       **'
-        
-'''
-Data Dictionary:
- Dataset contains 2500 entries
- 15 features are recorded 
-
- Description:
-1. Machine ID  -	an identifier for each machine in the dataset.
-2. Assembly Line Number  -	Indicates the assembly line to which the machine belongs.
-3. Hydraulic Pressure (bar) - The pressure of the hydraulic system in bars. Hydraulic pressure is critical for the proper functioning of many industrial machines.
-4. Coolant Pressure (bar) -	Pressure of the coolant system in bars. Coolant is often used to regulate the temperature of machines during operation.
-5. Air System Pressure (bar) - Pressure of the air system in bars. This could be relevant for pneumatic systems in the machinery.
-6. Coolant Temperature - Temperature of the coolant in the machine, usually measured in degrees Celsius.
-7. Hydraulic Oil Temperature (°C) -	Temperature of the hydraulic oil in the machine, measured in degrees Celsius.
-8. Spindle Bearing Temperature (°C)	- Temperature of the spindle bearings, which are crucial components in many machining processes, measured in degrees Celsius.
-9. Spindle Vibration (µm) - Vibration level of the spindle, which can indicate the stability and performance of the machining process, measured in micrometers (µm).
-10. Tool Vibration (µm) - Vibration level of the tool used in the machining process, measured in micrometers (µm).
-11. Spindle Speed (RPM)	 - Rotations per minute of the spindle, which determines the cutting speed in machining operations.
-12. Voltage (volts)	-  Electrical voltage supplied to the machine, measured in volts.
-13. Torque (Nm) - Torque applied to the machine, measured in Newton-meters (Nm). Torque is crucial for the operation of rotating machinery.
-14. Cutting (kN)- Cutting force applied during machining, measured in kilonewtons (kN). Cutting force is essential for understanding the load on the machine during operation.
-15. Downtime - Duration of machine downtime, typically measured in hours or minutes. Downtime represents the period during which the machine is not operational, often due to maintenance, repairs, or failures.
-
-
 
 '''
-
 # Importing necessary libraries
 import numpy as np
 import pandas as pd
@@ -67,7 +41,7 @@ import xgboost as xgb
 
 # Importing the data using sql
 
-machine = pd.read_csv(r"C:\ProgramData\MySQL\MySQL Server 8.0\Uploads\Machine Downtime.csv")
+machine = pd.read_csv(r"Machine Downtime.csv")
 
 # Credentials to connect to Database
 user = 'user1'  # user name
@@ -128,9 +102,6 @@ sweet_report = sv.analyze(df)
 
 #Saving results to HTML file
 sweet_report.show_html('sweet_report.html')
-
-
-
 ########################  EXPLORATORY DATA ANALYSIS / DESCRIPTIVE STATISTICS   ###########################
 
 # FIRST MOMENT BUSINESS DECISION /MEASURE OF CENTRAL TENDENCY
@@ -156,8 +127,6 @@ print(median_values)
 
 # Select only numeric columns
 numeric_columns = df.select_dtypes(include=['number'])
-
-
 std_deviation_values = numeric_columns.std()
 range_values = df.max() - numeric_columns.min()
 variance_values = numeric_columns.var()
@@ -175,17 +144,14 @@ print(variance_values)
 
 # Calculate skewness for each column
 skewness_values = df.skew()
-
 # Print skewness  values
 print("Skewness:")
 print(skewness_values)
 
 
 # FOURTH MOMENT BUSINESS DECISION /KURTOSIS
-
 # Calculate kurtosis for each column
 kurtosis_values = df.kurtosis()
-
 # Print  kurtosis values
 print("\nKurtosis:")
 print(kurtosis_values)
@@ -210,14 +176,12 @@ target
 df.duplicated().sum()
 # There are no duplicate values
 
-
 # check null values if any
 null_values = df.isnull()
 null_count = null_values.sum()
 
 print(null_count)
 # There are null values present 
-
 
 # **By using Mean imputation null values can be impute**
 numeric_features = df.select_dtypes(exclude = ['object']).columns
@@ -303,7 +267,6 @@ scaled_data.columns
 scaled_data.info()
 scaled_data.head
 
-
 ############## Outlier Analysis        #######################
 
 # Multiple boxplots in a single visualization.
@@ -371,7 +334,6 @@ sns.heatmap(orig_df_cor,cmap ='twilight', xticklabels=orig_df_cor, yticklabels=o
 plt.title('Correlation Heatmap')
 plt.show()
 
-
 # Pie Chart
 
 plt.figure(figsize=(8, 8))
@@ -404,7 +366,6 @@ plt.legend(title='Downtime')
 plt.grid(True)
 plt.show()
 scaled_data.info()
-
 
 # Histogram for all features
 import numpy as np
@@ -442,9 +403,6 @@ for i in range(num_features, len(axes)):
 plt.tight_layout()
 plt.show()
 
-
-
-
 # Converting target variable to binary data using mapping function
 target.info()
 
@@ -455,7 +413,6 @@ target['Downtime'] = target['Downtime'].map(binary_map)
 
 # Display the DataFrame to verify the changes
 print(target)
-
 
 ############  MODEL BUILDING  ###################
 
@@ -531,7 +488,6 @@ min_samples_leaf = [1, 2]
 # Method of selecting samples for training each tree
 bootstrap = [True, False]
 
-
 n_estimators = [int(x) for x in np.linspace(start = 10, stop = 80, num = 10)]
 n_estimators
 
@@ -580,7 +536,6 @@ print (f'Test Accuracy - : {rf_Grid.score(test_X, test_Y):.3f}')
 
 pickle.dump(cv_rf_grid, open('rfc.pkl', 'wb'))
 
-
 ############ DECISION TREE
 dt = DecisionTreeClassifier(random_state=42)
 dt_param_grid = {'max_depth': [None, 5, 10, 20]}
@@ -605,7 +560,6 @@ dt_accuracy
 # Saving Decision Tree Classifier
 pickle.dump(dt_best_model, open('decision_tree_model.pkl','wb'))
 
-
 #########  KNN
 knn = KNeighborsClassifier()
 knn_param_grid = {'n_neighbors': [3, 5, 10, 20]}
@@ -626,7 +580,6 @@ knn_accuracy
 
 # Saving K-Nearest Neighbors Classifier
 pickle.dump(knn_best_model, open('knn_model.pkl','wb'))
-
 
 ############ Logistic Regression
 # Create logistic regression model
@@ -659,8 +612,6 @@ lr_trainaccuracy
 
 # Saving Logistic Regression Model
 pickle.dump(best_lr, open('logistic_regression_model.pk' ,'wb'))
-
-
 
 ###############  SVM
 # SVC with linear kernel trick
@@ -721,8 +672,6 @@ print("SVM Training Accuracy:", train_accuracy_svm)
 # Saving Support Vector Classifier (SVC) Model
 pickle.dump(best, open('svc_model.pkl','wb'))
 
-
-
 ############## GradientBoosting
 
 from sklearn.ensemble import GradientBoostingClassifier
@@ -748,17 +697,12 @@ print(accuracy_score(train_Y,boost_clf1.predict(train_X)))
 # False Negatives (FN): There is no instance where a positive sample was incorrectly classified as negative.
 # The accuracy on the training data is approximately 1.0%.
 
-
 # Hyperparameters
 boost_clf2 = GradientBoostingClassifier(learning_rate = 0.02, n_estimators = 1000, max_depth = 1)
-
 boost_clf_p = boost_clf2.fit(train_X, train_Y)
-
 grad_pred_p = boost_clf_p.predict(test_X)
 
-
 # Evaluation on Testing Data
-
 print(confusion_matrix(test_Y, grad_pred_p))
 print('\n')
 print(accuracy_score(test_Y,grad_pred_p))
@@ -769,7 +713,6 @@ print(accuracy_score(test_Y,grad_pred_p))
 # False Negatives (FN): There are 0 instances where positive samples were incorrectly classified as negative.
 
 # Evaluation on Training Data
-
 print(confusion_matrix(train_Y, boost_clf_p.predict(train_X)))
 accuracy_score(train_Y, boost_clf_p.predict(train_X))
 # The accuracy on the training data is approximately 0.989%
@@ -780,8 +723,6 @@ accuracy_score(train_Y, boost_clf_p.predict(train_X))
 
 # Save the ML model
 pickle.dump(boost_clf_p, open('gradiantboostparam.pkl', 'wb'))
-
-
 
 ############   Naive bayes
 # Create the Naive Bayes classifier
@@ -803,7 +744,6 @@ nb_accuracy
 
 # Saving Model
 pickle.dump(nb, open('naive_bayes_model.pk' ,'wb'))
-
 
 # Comparing accuracies 
 
