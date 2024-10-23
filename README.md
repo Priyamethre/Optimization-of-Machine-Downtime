@@ -1,2 +1,4 @@
 # Optimization of Machine Downtime
 The unplanned downtime of machines manufacturing vehicle fuel pumps disrupts production and reduces productivity. Frequent interruptions lead to costly emergency repairs, impacting financial performance. Production inconsistency causes delivery delays, affecting customer satisfaction and reputation
+
+Business Solution: Implemented data preprocessing and machine learning techniques to enhance efficiency in pump manufacturing by minimizing machine downtime. This involved meticulous data cleaning, including handling missing values and normalization for consistency and precision. Developed and trained a predictive model, such as Random Forest, leveraging historical data to forecast potential downtimes. The model was then deployed via a user-friendly web application, facilitating real-time monitoring and performance predictions. 
