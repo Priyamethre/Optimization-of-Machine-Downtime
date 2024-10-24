@@ -10,47 +10,35 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 
-# Load the encoding model
-# encoding = joblib.load('encoding')
-
-# Load the winsorizer model
+# Load the model
 winsor = joblib.load('winsor')
-
-# Load the MinMax scaler pipeline model
 scale = joblib.load('minmax')
-
-# Load the mean impute pipeline model
 imputation = joblib.load('meanimpute')
 
 # Load the trained model
 rn_model = joblib.load('rfc.pkl')
 
 def preprocess_data(data):
-   # Specify columns to transform
     columns_to_transform = (['Hydraulic_Pressure(bar)',
            'Coolant_Pressure(bar)','Air_System_Pressure(bar)',
-           'Coolant_Temperature','Hydraulic_Oil_Temperature(°C)',
-           'Spindle_Bearing_Temperature(°C)','Spindle_Vibration(µm)',
+           'Spindle_Vibration(µm)',
            'Tool_Vibration(µm)','Spindle_Speed(RPM)','Voltage(volts)',
            'Torque(Nm)','Cutting(kN)'])  
     
-    # Apply the preprocessing pipeline to the specified columns
-    data_preprocessed = pd.DataFrame(imputation.transform(data),columns=columns_to_transform)
-    scaled_data = pd.DataFrame(scale.transform(data_preprocessed),columns=columns_to_transform)
-   #clean_data = pd.DataFrame(encoding.transform(scaled_data),columns=columns_to_transform)
-    scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
-           'Air_System_Pressure(bar)', 'Coolant_Temperature',
-           'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+# Apply the preprocessing pipeline to the specified columns
+data_preprocessed = pd.DataFrame(imputation.transform(data),columns=columns_to_transform)
+scaled_data = pd.DataFrame(scale.transform(data_preprocessed),columns=columns_to_transform)
+#clean_data = pd.DataFrame(encoding.transform(scaled_data),columns=columns_to_transform)
+scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
+           'Air_System_Pressure(bar)', 
            'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Spindle_Speed(RPM)',
            'Voltage(volts)', 'Torque(Nm)', 'Cutting(kN)']] = winsor.transform(scaled_data[['Hydraulic_Pressure(bar)', 'Coolant_Pressure(bar)',
-                  'Air_System_Pressure(bar)', 'Coolant_Temperature',
-                  'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+                  'Air_System_Pressure(bar)', 
                   'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Spindle_Speed(RPM)',
                   'Voltage(volts)', 'Torque(Nm)', 'Cutting(kN)']])
    
     scaled_data = pd.DataFrame(winsor.transform(scaled_data),columns =columns_to_transform)
-    scaled_data = scaled_data.drop(columns=['Air_System_Pressure(bar)', 'Coolant_Temperature',
-                                  'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
+    scaled_data = scaled_data.drop(columns=['Air_System_Pressure(bar)', 
                                   'Spindle_Vibration(µm)', 'Tool_Vibration(µm)', 'Voltage(volts)'])
     
     return scaled_data
