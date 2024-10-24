@@ -1,6 +1,4 @@
 
-
-'''
 # Importing necessary libraries
 import numpy as np
 import pandas as pd
@@ -51,8 +49,6 @@ null_values = df.isnull()
 null_count = null_values.sum()
 print(null_count)
 # There are null values present 
-# Set pandas options to display all rows and columns
-
 print(df)
 
 df.describe()
@@ -60,17 +56,13 @@ df.describe()
 # dropping Dates column
 df.drop(columns=['Dates'], inplace=True)
 
-# We have to check unique values for categorical data 
 df.Downtime.value_counts()
 df.Machine_ID.value_counts()
 df.Assembly_Line_No.value_counts()
 
-### AUTO EDA 
 #EDA using Autoviz
 sweet_report = sv.analyze(df)
 sweet_report.show_html('sweet_report.html')
-
-
 
 ##################   DATA CLEANING 
 
@@ -239,22 +231,17 @@ plt.grid(True)
 plt.show()
 scaled_data.info()
 
-# Histogram for all features
+# Histogram 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
-# Assuming df is your DataFrame with all features
 
 # Calculate the number of features and define the layout of subplots
 num_features = len(df.columns)
 num_cols = 3  # Number of columns for subplots
 num_rows = (num_features + num_cols - 1) // num_cols  # Calculate number of rows
 
-# Define the size of the figure
 fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 5*num_rows))
-
-# Flatten axes for easy iteration
 axes = axes.flatten()
 
 # Loop through each feature and create histograms
@@ -266,12 +253,8 @@ for i, col in enumerate(df.columns):
     ax.set_ylabel('Frequency')
     ax.grid(True)
     ax.set_axisbelow(True)
-
-# Hide any extra subplots
 for i in range(num_features, len(axes)):
     axes[i].axis('off')
-
-# Adjust layout and show plot
 plt.tight_layout()
 plt.show()
 
@@ -290,19 +273,13 @@ print(target)
 
 scaled_data.columns
 
-#2.--Feature Selection using Random Forest 
+#Feature Selection using Random Forest 
 from sklearn.ensemble import RandomForestRegressor
 
-#Initialize Random Forest Regressor 
 rf = RandomForestRegressor()
-
-#Fit the model to your preprocessed data 
 rf.fit(scaled_data, target)
 
-#Get feature importances
 feature_importances = pd.DataFrame(rf.feature_importances_,index=scaled_data.columns,columns=['importance'])
-
-#Sort the features by their importance
 feature_important = feature_importances.sort_values(by='importance', ascending=False)
 
 #Plotting feature importances
@@ -312,13 +289,12 @@ plt.xlabel('Importance')
 plt.ylabel('Features')
 plt.title('Feature Importance') 
 plt.show()
-#Setting a threshold value (adjust this based on your preference)
 threshold = 0.01
 
 # the important features are are 'Hydraulic_Pressure(bar)','Coolant_Pressure(bar)','Torque(Nm)', 'Cutting(kN)' and 'Spindle_Speed(RPM)'
 
 # Separate features (X) and target variable (y)
-# We've identified the crucial features impacting downtime for the given X value using Randomforest analysis.
+# Identified the crucial features impacting downtime for the given X value using Randomforest analysis.
 X = scaled_data.drop(columns=['Air_System_Pressure(bar)', 'Coolant_Temperature',
 'Hydraulic_Oil_Temperature(°C)', 'Spindle_Bearing_Temperature(°C)',
 'Spindle_Vibration(µm)', 'Tool_Vibration(µm)','Voltage(volts)'])
@@ -331,7 +307,7 @@ Y
 print("Shape of X:", X.shape)
 print("Shape of Y:", Y.shape)
 
-#  Assuming Y is your target variable ,converting it into 1D array
+#  Y is the target variable ,converting it into 1D array
 Y = np.ravel(Y)
 
 # Data Partition into Train and Test
@@ -341,47 +317,29 @@ train_X, test_X, train_Y, test_Y = train_test_split(X, Y, test_size = 0.2, strat
 rf_Model = RandomForestClassifier()
 
 # #### Hyperparameters
-
-# Number of trees in random forest
 n_estimators = [int(x) for x in np.linspace(start = 10, stop = 80, num = 10)]
-
-# Number of features to consider at every split
 max_features = ['auto', 'sqrt','log2', None]
-
-# Maximum number of levels in tree
 max_depth = [2, 4]
-
-# Minimum number of samples required to split a node
 min_samples_split = [2, 5]
-
-# Minimum number of samples required at each leaf node
 min_samples_leaf = [1, 2]
 
-# Method of selecting samples for training each tree
 bootstrap = [True, False]
-
 n_estimators = [int(x) for x in np.linspace(start = 10, stop = 80, num = 10)]
 n_estimators
 
 # Create the param grid
-
 param_grid = {'n_estimators': n_estimators,
                'max_features': ['auto', 'sqrt', 'log2', None],
                'max_depth': max_depth,
                'min_samples_split': min_samples_split,
                'min_samples_leaf': min_samples_leaf,
                'bootstrap': bootstrap}
-
 print(param_grid)
 
 # ### Hyperparameter optimization with GridSearchCV
-
 rf_Grid = GridSearchCV(estimator = rf_Model, param_grid = param_grid, cv = 10, verbose = 1, n_jobs = -1)
-
 rf_Grid.fit(train_X,train_Y)
-
 rf_Grid.best_params_
-
 cv_rf_grid = rf_Grid.best_estimator_
 
 # ## Check Accuracy
@@ -389,12 +347,10 @@ cv_rf_grid = rf_Grid.best_estimator_
 # Evaluation on Test Data
 
 test_pred = cv_rf_grid.predict(test_X)
-
 accuracy_test = np.mean(test_pred == test_Y)
 accuracy_test
 
 cm = skmet.confusion_matrix(test_Y, test_pred)
-
 cmplot = skmet.ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = ['test_Y', 'test_pred'])
 cmplot.plot()
 cmplot.ax_.set(title = ' Confusion Matrix', 
@@ -404,8 +360,6 @@ print (f'Train Accuracy - : {rf_Grid.score(train_X, train_Y):.3f}')
 print (f'Test Accuracy - : {rf_Grid.score(test_X, test_Y):.3f}')
 #  The training accuracy score is 0.963%, suggesting that the model performs well on the training data.
 #  The test accuracy score is 0.966%, indicating that the model generalizes well to unseen data, which is a positive sign of its effectiveness.
-#  These accuracy scores suggest that the Random Forest model trained using GridSearchCV performs well on both the training and test datasets, with relatively high accuracy.
-
 pickle.dump(cv_rf_grid, open('rfc.pkl', 'wb'))
 
 ############ DECISION TREE
@@ -492,46 +446,32 @@ model1 = model_linear.fit(train_X, train_Y)
 pred_test_linear = model_linear.predict(test_X)
 pred_train_linear = model_linear.predict(train_X)
 
-# Calculate accuracy
 accuracy_train = np.mean(pred_train_linear==train_Y)
 accuracy_test = np.mean(pred_test_linear == test_Y)
-
 accuracy_train
 accuracy_test
-
 # The accuracy on the training data is approximately 85%.
 # The accuracy on the test data is approximately 87.2%.
 
 ### Hyperparameter Optimization
 ## RandomizedSearchCV
 
-# Base model
 model = SVC()
-
-# Parameters set
 parameters = {'C': [0.1, 1, 10, 100], 
               'gamma': [1, 0.1, 0.01, 0.001],
               'kernel': ['linear', 'poly', 'rbf', 'sigmoid']}
 
-# Randomized Search Technique for exhaustive search for best model
 rand_search =  RandomizedSearchCV(model, parameters, n_iter = 10, 
                                   n_jobs = 3, cv = 3, scoring = 'accuracy', random_state = 0)
   
 # Fitting the model for grid search
 randomised = rand_search.fit(train_X, train_Y)
-
-# Best parameters
 randomised.best_params_
-# The best parameters obtained were:-  Kernel: RBF  ,  Gamma: 1  and C: 10
-
-# Best Model
 best = randomised.best_estimator_
-
-# Evaluate on Test data
 pred_test = best.predict(test_X)
 
 np.mean(pred_test == test_Y)
-# Accuracy score of approximately 0.94% indicates that the model correctly predicted the target variable (downtime) for around 94% of the samples in the test set, showing an improvement compared to the previous accuracy score of 86.4%.
+# Accuracy score of approximately 0.94% indicates that the model correctly predicted the target variable (downtime) for around 94% of the samples in the test set.
 
 accuracy_svm = np.mean(pred_test == test_Y)
 print("SVM  Accuracy:", accuracy_svm)
@@ -550,48 +490,26 @@ from sklearn.ensemble import GradientBoostingClassifier
 
 boost_clf = GradientBoostingClassifier()
 boost_clf1 = boost_clf.fit(train_X, train_Y)
-
 grad_pred = boost_clf1.predict(test_X)
 
 print(confusion_matrix(test_Y, grad_pred))
 print(accuracy_score(test_Y, grad_pred))
-# True Positive (TP): This represents the number of positive samples that were correctly classified as positive by the model. In this case, there are 248 instances where the model correctly predicted that the samples belong to the positive class.
-# True Negative (TN): This represents the number of negative samples that were correctly classified as negative by the model. In this case, there are 245 instances where the model correctly predicted that the samples belong to the negative class.
-# False Positive (FP): Also known as Type I error, this represents the number of negative samples that were incorrectly classified as positive by the model. In this case, there are 5 instances where the model incorrectly predicted that the negative samples belong to the positive class.
-# False Negative (FN): Also known as Type II error, this represents the number of positive samples that were incorrectly classified as negative by the model. In this case, there are 2 instances where the model incorrectly predicted that the positive samples belong to the negative class.
-# The accuracy score is 0.986, indicating that the model correctly predicted 0.986% of the test data samples.
-
 print(confusion_matrix(train_Y, boost_clf1.predict(train_X)))
 print(accuracy_score(train_Y,boost_clf1.predict(train_X)))
-# True Positives (TP): There are 1011 instances where the model correctly predicted positive samples as positive.
-# True Negatives (TN): There are 988 instances where the model correctly predicted negative samples as negative.
-# False Positives (FP): There are no instances where negative samples were incorrectly classified as positive.
-# False Negatives (FN): There is no instance where a positive sample was incorrectly classified as negative.
 # The accuracy on the training data is approximately 1.0%.
 
-# Hyperparameters
 boost_clf2 = GradientBoostingClassifier(learning_rate = 0.02, n_estimators = 1000, max_depth = 1)
 boost_clf_p = boost_clf2.fit(train_X, train_Y)
 grad_pred_p = boost_clf_p.predict(test_X)
 
-# Evaluation on Testing Data
 print(confusion_matrix(test_Y, grad_pred_p))
 print('\n')
 print(accuracy_score(test_Y,grad_pred_p))
 # The accuracy on the testing data is approximately 0.99%.
-# True Positives (TP): There are 247 instances where the model correctly predicted positive samples as positive.
-# True Negatives (TN): There are 241 instances where the model correctly predicted negative samples as negative.
-# False Positives (FP): There are 6 instances where negative samples were incorrectly classified as positive.
-# False Negatives (FN): There are 0 instances where positive samples were incorrectly classified as negative.
 
-# Evaluation on Training Data
 print(confusion_matrix(train_Y, boost_clf_p.predict(train_X)))
 accuracy_score(train_Y, boost_clf_p.predict(train_X))
 # The accuracy on the training data is approximately 0.989%
-# True Positives (TP): There are 977 instances where the model correctly predicted positive samples as positive.
-# True Negatives (TN): There are 999 instances where the model correctly predicted negative samples as negative.
-# False Positives (FP): There are 13 instances where negative samples were incorrectly classified as positive.
-# False Negatives (FN): There are 11 instances where positive samples were incorrectly classified as negative.
 
 # Save the ML model
 pickle.dump(boost_clf_p, open('gradiantboostparam.pkl', 'wb'))
@@ -605,16 +523,13 @@ nb_y_train_pred = nb.predict(train_X)
 nb_trainaccuracy= accuracy_score(train_Y,nb_y_train_pred)
 nb_trainaccuracy
 
-# Calculating test accuracy
+
 nb_y_pred = nb.predict(test_X)
 nb_accuracy = accuracy_score(test_Y, nb_y_pred)
 nb_accuracy
-
-# For the Naive Bayes (NB) model:
 # The accuracy on the training data is approximately 85%.
 # The accuracy on the test data is approximately 0.872%.
 
-# Saving Model
 pickle.dump(nb, open('naive_bayes_model.pk' ,'wb'))
 
 # Comparing accuracies 
