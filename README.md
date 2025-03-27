@@ -67,6 +67,6 @@ Machine downtime, especially in industries such as vehicle fuel pump manufacturi
 - **Data Analysis:** Pandas, NumPy, Matplotlib, Seaborn  
 - **Machine Learning:** Scikit-Learn (Random Forest, Decision Tree, KNN, SVM, Gradient Boosting, Naive Bayes, Logistic Regression)  
 - **Preprocessing:** Imputation (Mean, Median, MICE), Winsorization, Scaling (Min-Max, Standard)
-- 
+
 ## **Conclusion**  
 This project successfully addressed the problem of unplanned machine downtime by developing a predictive model that accurately forecasts machine failures. The Random Forest model, with a training accuracy of 96.3% and test accuracy of 96.6%, demonstrates that proactive measures can be taken to minimize downtime, improve productivity, and reduce costs. The balanced nature of the dataset further ensured that the model could be trained effectively without additional resampling, providing reliable and actionable insights for maintenance scheduling and operational efficiency.
